@@ -2,14 +2,11 @@ return {
     "neovim/nvim-lspconfig",
     event = { "BufReadPre", "BufNewFile" },
     dependencies = {
-        "williamboman/mason-lspconfig.nvim",
         "hrsh7th/cmp-nvim-lsp",
         { "antosha417/nvim-lsp-file-operations", config = true },
     },
     config = function()
         local lspconfig = require("lspconfig")
-
-        local mason_lspconfig = require("mason-lspconfig")
 
         local cmp_nvim_lsp = require("cmp_nvim_lsp")
 
@@ -70,51 +67,58 @@ return {
 
         -- Change the Diagnostic symbols in the sign column (gutter)
         -- (not in youtube nvim video)
-        local signs = { Error = "E ", Warn = "W ", Hint = "H ", Info = "I " }
-        for type, icon in pairs(signs) do
-            local hl = "DiagnosticSign" .. type
-            vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-        end
-
-        mason_lspconfig.setup_handlers({
-            -- default handler for installed servers
-            function(server_name)
-                lspconfig[server_name].setup({
-                    capabilities = capabilities,
-                })
-            end,
-            ["svelte"] = function()
-                -- configure svelte server
-                lspconfig["svelte"].setup({
-                    capabilities = capabilities,
-                    on_attach = function(client, bufnr)
-                        vim.api.nvim_create_autocmd("BufWritePost", {
-                            pattern = { "*.js", "*.ts" },
-                            callback = function(ctx)
-                                -- Here use ctx.match instead of ctx.file
-                                client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-                            end,
-                        })
-                    end,
-                })
-            end,
-            ["lua_ls"] = function()
-                -- configure lua server (with special settings)
-                lspconfig["lua_ls"].setup({
-                    capabilities = capabilities,
-                    settings = {
-                        Lua = {
-                            -- make the language server recognize "vim" global
-                            diagnostics = {
-                                globals = { "vim" },
-                            },
-                            completion = {
-                                callSnippet = "Replace",
-                            },
-                        },
-                    },
-                })
-            end,
+        vim.diagnostic.config({
+          signs = {
+            text = {
+              [vim.diagnostic.severity.ERROR] = "❌",
+              [vim.diagnostic.severity.WARN]  = "⚠️",
+              [vim.diagnostic.severity.HINT]  = "💡",
+              [vim.diagnostic.severity.INFO]  = "ℹ️",
+            },
+          },
         })
-    end,
+
+
+    -- Directly configure LSP servers
+
+    -- Default servers (ts_ls, html, etc.)
+    local servers = { "ts_ls", "html", "tailwindcss", "rust_analyzer" }
+    for _, server in ipairs(servers) do
+      lspconfig[server].setup({
+        capabilities = capabilities,
+      })
+    end
+
+    -- Svelte custom setup
+    lspconfig["svelte"].setup({
+      capabilities = capabilities,
+      on_attach = function(client, bufnr)
+        vim.api.nvim_create_autocmd("BufWritePost", {
+          pattern = { "*.js", "*.ts" },
+          callback = function(ctx)
+            client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
+          end,
+        })
+      end,
+    })
+
+    -- Lua custom setup
+    lspconfig["lua_ls"].setup({
+      capabilities = capabilities,
+      settings = {
+        Lua = {
+          workspace = {
+            checkThirdParty = false,
+            library = { vim.env.VIMRUNTIME },
+          },
+          diagnostics = {
+            globals = { "vim" },
+          },
+          completion = {
+            callSnippet = "Replace",
+          },
+        },
+      },
+    })
+  end
 }

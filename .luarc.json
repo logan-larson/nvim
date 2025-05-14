@@ -1,0 +1,10 @@
+{
+  "workspace": {
+    "checkThirdParty": false,
+    "library": ["/usr/share/nvim/runtime"]
+  },
+  "diagnostics": {
+    "globals": ["vim"]
+  }
+}
+

@@ -6,3 +6,4 @@ vim.opt.expandtab = true
 vim.opt.hidden = true
 vim.opt.hlsearch = false
 vim.opt.termguicolors = true
+vim.opt.signcolumn = "yes"
