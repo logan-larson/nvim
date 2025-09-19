@@ -15,3 +15,20 @@ map("v", "<C-_>", function()
 end, opts)
 
 map("n", "<leader>e", "<cmd>Ex<cr>", opts)
+
+-- Buffer navigation keymaps
+map("n", "<leader>h", "<cmd>bprevious<cr>", opts)  -- Previous buffer
+map("n", "<leader>l", "<cmd>bnext<cr>", opts)      -- Next buffer
+map("n", "<leader>[", "<cmd>bfirst<cr>", opts)     -- First buffer
+map("n", "<leader>]", "<cmd>blast<cr>", opts)      -- Last buffer
+map("n", "<leader>q", "<cmd>bprevious <BAR> bdelete #<cr>", opts)    -- Close current buffer
+
+-- Window navigation keymaps
+map("n", "<C-J>", "<C-W><C-J>", opts)
+map("n", "<C-K>", "<C-W><C-K>", opts)
+map("n", "<C-L>", "<C-W><C-L>", opts)
+map("n", "<C-H>", "<C-W><C-H>", opts)
+
+-- NERDTree keymaps
+map("n", "<C-n>", "<cmd>NERDTreeToggle<cr>", opts)     -- Toggle NERDTree
+-- map("n", "<leader>f", "<cmd>NERDTreeFind<cr>", opts)       -- Find current file in NERDTree
