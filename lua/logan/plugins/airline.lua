@@ -1,7 +1,8 @@
 return {
     "vim-airline/vim-airline",
     dependencies = {
-        "vim-airline/vim-airline-themes"
+        "vim-airline/vim-airline-themes",
+        "ryanoasis/vim-devicons"
     },
     event = "VeryLazy",
     init = function()
@@ -15,5 +16,11 @@ return {
     config = function()
         -- Simple airline configuration - just enable tabline
         vim.opt.termguicolors = true
+        vim.opt.showtabline = 2
+
+        for i = 1,9 do
+            vim.keymap.set("n", "<leader>" .. i, "<Plug>AirlineSelectTab" .. i, { silent = true, desc = "Airline buffer " .. i })
+        end
+        vim.keymap.set("n", "<leader>0", "<Plug>AirlineSelectTabLast", { silent = true, desc = "Airline last buffer" })
     end,
 }

@@ -1,5 +1,10 @@
 return {
     "preservim/nerdtree",
+    dependencies = {
+        "Xuyuanp/nerdtree-git-plugin",
+        "tiagofumo/vim-nerdtree-syntax-highlight",
+        "ryanoasis/vim-devicons",
+    },
     cmd = { "NERDTree", "NERDTreeToggle", "NERDTreeFind", "NERDTreeClose" },
     init = function()
         -- Auto open NERDTree when opening a directory
