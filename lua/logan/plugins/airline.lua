@@ -12,6 +12,16 @@ return {
         vim.g["airline#extensions#tabline#buffer_idx_mode"] = 1
         vim.g["airline#extensions#tabline#formatter"] = "unique_tail"
         vim.g["airline_powerline_fonts"] = 1
+
+        vim.g["airline_left_sep"] = ' '
+        vim.g["airline_left_alt_sep"] = ' '
+        vim.g["airline_right_sep"] = ' '
+        vim.g["airline_right_alt_sep"] = ' '
+
+        vim.g["airline#extensions#tabline#left_sep"] = ' '
+        vim.g["airline#extensions#tabline#left_alt_sep"] = ' '
+        vim.g["airline#extensions#tabline#right_sep"] = ' '
+        vim.g["airline#extensions#tabline#right_alt_sep"] = ' '
     end,
     config = function()
         -- Simple airline configuration - just enable tabline

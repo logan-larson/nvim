@@ -6,10 +6,7 @@ return {
         { "antosha417/nvim-lsp-file-operations", config = true },
     },
     config = function()
-        local lspconfig = require("lspconfig")
-
         local cmp_nvim_lsp = require("cmp_nvim_lsp")
-
         local keymap = vim.keymap
 
         vim.api.nvim_create_autocmd("LspAttach", {
@@ -65,6 +62,47 @@ return {
         -- used to enable autocompletion (assign to every lsp server config)
         local capabilities = cmp_nvim_lsp.default_capabilities()
 
+        -- Global defaults applied to every server config
+        vim.lsp.config("*", {
+            capabilities = capabilities,
+        })
+
+        -- Per-server configs
+
+        -- Basic servers
+        vim.lsp.config("ts_ls", {})
+        vim.lsp.config("html", {})
+        vim.lsp.config("tailwindcss", {})
+        vim.lsp.config("rust_analyzer", {})
+
+        -- Svelte custom setup
+        vim.lsp.config("svelte", {
+          on_attach = function(client, _)
+            local grp = vim.api.nvim_create_augroup("SvelteTsJsWatch", { clear = true })
+            vim.api.nvim_create_autocmd("BufWritePost", {
+                group = grp,
+                pattern = { "*.js", "*.ts" },
+                callback = function(ctx)
+                    client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
+                end,
+            })
+          end,
+        })
+
+        -- Lua custom setup
+        vim.lsp.config("lua_ls", {
+            settings = {
+                Lua = {
+                    workspace = {
+                        checkThirdParty = false,
+                        library = { vim.env.VIMRUNTIME },
+                    },
+                    diagnostics = { globals = { "vim" } },
+                    completion = { callSnippet = "Replace" },
+                },
+            },
+        })
+
         -- Change the Diagnostic symbols in the sign column (gutter)
         -- (not in youtube nvim video)
         vim.diagnostic.config({
@@ -72,53 +110,10 @@ return {
             text = {
               [vim.diagnostic.severity.ERROR] = "❌",
               [vim.diagnostic.severity.WARN]  = "⚠️",
-              [vim.diagnostic.severity.HINT]  = "💡",
+              [vim.diagnostic.severity.HINT]  = "H",
               [vim.diagnostic.severity.INFO]  = "ℹ️",
             },
           },
         })
-
-
-    -- Directly configure LSP servers
-
-    -- Default servers (ts_ls, html, etc.)
-    local servers = { "ts_ls", "html", "tailwindcss", "rust_analyzer" }
-    for _, server in ipairs(servers) do
-      lspconfig[server].setup({
-        capabilities = capabilities,
-      })
     end
-
-    -- Svelte custom setup
-    lspconfig["svelte"].setup({
-      capabilities = capabilities,
-      on_attach = function(client, bufnr)
-        vim.api.nvim_create_autocmd("BufWritePost", {
-          pattern = { "*.js", "*.ts" },
-          callback = function(ctx)
-            client.notify("$/onDidChangeTsOrJsFile", { uri = ctx.match })
-          end,
-        })
-      end,
-    })
-
-    -- Lua custom setup
-    lspconfig["lua_ls"].setup({
-      capabilities = capabilities,
-      settings = {
-        Lua = {
-          workspace = {
-            checkThirdParty = false,
-            library = { vim.env.VIMRUNTIME },
-          },
-          diagnostics = {
-            globals = { "vim" },
-          },
-          completion = {
-            callSnippet = "Replace",
-          },
-        },
-      },
-    })
-  end
 }
