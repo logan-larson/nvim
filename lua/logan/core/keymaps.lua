@@ -29,6 +29,12 @@ map("n", "<C-K>", "<C-W><C-K>", opts)
 map("n", "<C-L>", "<C-W><C-L>", opts)
 map("n", "<C-H>", "<C-W><C-H>", opts)
 
+-- Line navigation keymaps
+map("n", "H", "^", opts)
+map("n", "L", "$", opts)
+map("v", "H", "^", opts)
+map("v", "L", "$", opts)
+
 -- NERDTree keymaps
 map("n", "<C-n>", "<cmd>NERDTreeToggle<cr>", opts)     -- Toggle NERDTree
 -- map("n", "<leader>f", "<cmd>NERDTreeFind<cr>", opts)       -- Find current file in NERDTree
