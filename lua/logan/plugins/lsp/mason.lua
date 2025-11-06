@@ -25,7 +25,8 @@ return {
                 "tailwindcss",
                 "svelte",
                 "lua_ls",
-                "rust_analyzer"
+                "rust_analyzer",
+                "gopls"
             },
             automatic_installation = true,
         })
