@@ -1,6 +1,12 @@
+-- User-local tools (tree-sitter-cli, etc.)
+vim.env.PATH = vim.fn.expand("~/.local/bin") .. ":" .. (vim.env.PATH or "")
+
+-- Neovim 0.13 looks here for compiled treesitter parsers (vimdoc, lua, ...)
+vim.opt.rtp:prepend(vim.fn.stdpath("data") .. "/site")
+
 -- Bootstrap lazy.nvim if not installed
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
     "git",
     "clone",
@@ -11,6 +17,21 @@ if not vim.loop.fs_stat(lazypath) then
   })
 end
 vim.opt.rtp:prepend(lazypath)
+
+-- :helptags now requires a vimdoc parser. lazy.nvim calls it while installing
+-- plugins, which used to abort startup before treesitter could install one.
+do
+  local ok_help, help = pcall(require, "lazy.help")
+  if ok_help and help.update then
+    local orig = help.update
+    help.update = function(...)
+      local ok, err = pcall(orig, ...)
+      if not ok then
+        vim.notify("lazy helptags skipped: " .. tostring(err), vim.log.levels.WARN)
+      end
+    end
+  end
+end
 
 require("lazy").setup(
     {

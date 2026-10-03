@@ -4,135 +4,202 @@ A modern Neovim configuration built with Lua and managed by Lazy.nvim.
 
 ## Prerequisites
 
-Before setting up this configuration, ensure you have the following installed:
+### 1. Neovim 0.12+
 
-### 1. Neovim 0.10+
-
-This configuration requires Neovim version 0.10 or higher. Install it using the official GitHub repository:
+`nvim-treesitter` is on the rewritten `main` branch, which needs Neovim 0.12 or newer. This config is tested on the 0.13 nightly from the Ubuntu PPA.
 
 ```bash
-# Add the Neovim repository
 sudo add-apt-repository ppa:neovim-ppa/unstable
-
-# Update package list
 sudo apt update
-
-# Install Neovim
 sudo apt install neovim
 ```
 
-Alternatively, you can install from the GitHub releases:
+Alternatively, install a GitHub nightly:
+
 ```bash
-# Download and install the latest release
-wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz
-tar -xzf nvim-linux64.tar.gz
-sudo mv nvim-linux64 /opt/nvim
-sudo ln -s /opt/nvim/bin/nvim /usr/local/bin/nvim
+wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.tar.gz
+tar -xzf nvim-linux-x86_64.tar.gz
+sudo mv nvim-linux-x86_64 /opt/nvim
+sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
 ```
 
-### 2. Nerd Font
+Confirm with `nvim --version`.
 
-This configuration uses Nerd Font icons for the UI. Install a Nerd Font for the best experience:
+### 2. Build tools
 
-**Recommended Font: 0xProto**
+Several plugins compile native code on first install:
+
+| Dependency | Used by |
+| --- | --- |
+| `gcc` / `clang` | Treesitter parsers, telescope-fzf-native |
+| `make` | telescope-fzf-native (`make`), LuaSnip (`make install_jsregexp`) |
+| `curl`, `tar`, `git` | lazy.nvim and treesitter parser downloads |
+
 ```bash
-# Download the font
-wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip
+sudo apt install build-essential git curl tar
+```
 
-# Extract and install
+`gcc` alone is not enough for telescope-fzf-native. Its lazy build step is `make`, so install that package if it is missing.
+
+### 3. tree-sitter CLI 0.26.1+
+
+The `main` treesitter plugin shells out to `tree-sitter` to compile parsers. Ubuntu's `apt` package is currently too old (0.25.x). Install the official binary into `~/.local/bin` (this config prepends that directory to `PATH`):
+
+```bash
+mkdir -p ~/.local/bin
+TAG=$(curl -fsSL https://api.github.com/repos/tree-sitter/tree-sitter/releases/latest | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+curl -fsSL -o /tmp/tree-sitter.gz "https://github.com/tree-sitter/tree-sitter/releases/download/${TAG}/tree-sitter-linux-x64.gz"
+gzip -dc /tmp/tree-sitter.gz > ~/.local/bin/tree-sitter
+chmod +x ~/.local/bin/tree-sitter
+tree-sitter --version   # expect 0.26.1 or newer
+```
+
+Neovim 0.13 uses the `vimdoc` parser for `:help` and `:helptags`. This config installs `vim`, `vimdoc`, and `query` on startup. If those parsers are missing you will see `No parser for language "vimdoc"`.
+
+### 4. ripgrep
+
+Telescope live grep (`<leader>fg`) needs `rg` on your `PATH`:
+
+```bash
+sudo apt install ripgrep
+```
+
+### 5. Nerd Font
+
+This configuration uses Nerd Font icons for Airline, NERDTree, and Telescope.
+
+**Recommended font: 0xProto**
+
+```bash
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/0xProto.zip
 unzip 0xProto.zip
 sudo mkdir -p /usr/local/share/fonts/0xProto
 sudo mv *.ttf /usr/local/share/fonts/0xProto/
 sudo fc-cache -fv
 ```
 
-After installation, configure your terminal to use the 0xProto font.
+Then set your terminal font to 0xProto.
 
-### 3. Node.js (via NVM)
+### 6. Language runtimes (Mason LSPs)
 
-Many plugins require Node.js. Install it using NVM (Node Version Manager):
+Mason installs language servers, but some servers still need a toolchain on the machine:
+
+| Runtime | Servers in this config |
+| --- | --- |
+| Node.js (LTS) | `ts_ls`, `html`, `tailwindcss`, `svelte` |
+| Rust (`rustup`) | `rust_analyzer` |
+| Go | `gopls` |
+| (none extra) | `lua_ls` is a Mason binary |
+
+Node via NVM:
 
 ```bash
-# Install NVM
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# Reload your shell
 source ~/.bashrc
-
-# Install the latest LTS Node.js
 nvm install --lts
 nvm use --lts
 ```
 
+Skip Go or Rust until you need those languages. Mason will fail on `gopls` if `go` is not installed; that is expected.
+
+### 7. Optional: WakaTime
+
+`vim-wakatime` is enabled at startup. If you use it, add your API key so it can write `~/.wakatime.cfg`. Otherwise you can ignore the config-file warning or remove `lua/logan/plugins/wakatime.lua`.
+
 ## Installation
 
-1. **Clone or copy this configuration:**
+1. **Clone this configuration:**
+
    ```bash
-   # If using git
    git clone <your-repo-url> ~/.config/nvim
-   
-   # Or manually copy the files to ~/.config/nvim/
    ```
 
 2. **Start Neovim:**
+
    ```bash
    nvim
    ```
 
-3. **Install plugins:**
-   When you first start Neovim, Lazy.nvim will automatically install all configured plugins. This may take a few minutes.
+   Lazy.nvim installs plugins on first launch. Treesitter will then compile parsers in the background (needs `gcc` and `tree-sitter`).
 
-4. **Restart Neovim:**
-   After the initial plugin installation, restart Neovim to ensure everything loads correctly.
+3. **Restart Neovim** after the first plugin install.
+
+4. **Sanity checks:**
+
+   ```
+   :checkhealth
+   :checkhealth nvim-treesitter
+   :TSInstallInfo
+   ```
+
+   Confirm `vimdoc` is installed and `telescope-fzf-native` built `build/libfzf.so`. If the fzf library is missing:
+
+   ```bash
+   cd ~/.local/share/nvim/lazy/telescope-fzf-native.nvim
+   make
+   ```
+
+Do not run Neovim as root. Plugin and parser directories under `~/.local/share/nvim` must be owned by your user.
 
 ## Configuration Structure
 
 - `init.lua` - Main entry point
 - `lua/logan/core/` - Core Neovim settings (options, keymaps)
 - `lua/logan/plugins/` - Plugin configurations
-- `lua/logan/lazy.lua` - Lazy.nvim configuration
+- `lua/logan/lazy.lua` - Lazy.nvim bootstrap and startup guards
+- `lazy-lock.json` - Pinned plugin commits
 
 ## Features
 
-This configuration includes:
-- **Plugin Management**: Lazy.nvim for fast, lazy-loaded plugins
-- **LSP**: Language Server Protocol support with Mason
-- **File Explorer**: NERDTree integration
-- **Fuzzy Finder**: Telescope for file and content search
-- **Syntax Highlighting**: Tree-sitter for enhanced syntax
-- **Auto-completion**: nvim-cmp with LSP integration
-- **Status Line**: Airline for a modern status bar
-- **Commenting**: Comment.nvim for easy code commenting
+- **Plugin Management**: Lazy.nvim
+- **LSP**: Mason + nvim-lspconfig (`vim.lsp.config` / `automatic_enable`)
+- **File Explorer**: NERDTree
+- **Fuzzy Finder**: Telescope + fzf-native
+- **Syntax Highlighting**: nvim-treesitter (`main` branch)
+- **Auto-completion**: nvim-cmp + LuaSnip
+- **Status Line**: Airline
+- **Commenting**: Comment.nvim + ts-context-commentstring
 
 ## Troubleshooting
 
-If you encounter issues:
+1. **`No parser for language "vimdoc"`**
+   - Neovim 0.13 generates helptags with Treesitter.
+   - Install `tree-sitter` 0.26.1+ on `PATH`, then `:TSInstall vimdoc vim query lua`.
+   - `lua/logan/lazy.lua` pcall-wraps lazy's helptags so a missing parser warns instead of aborting startup.
 
-1. **Check Neovim version:**
+2. **Telescope: `'fzf' extension doesn't exist` / missing `libfzf.so`**
+   - You need both `gcc` and `make`.
+   - Rebuild with `make` in `~/.local/share/nvim/lazy/telescope-fzf-native.nvim`.
+   - Telescope config pcall-loads the extension so a failed compile does not crash Neovim.
+
+3. **Mason failed on `gopls` / `rust_analyzer` / `ts_ls`**
+   - Install the matching runtime (Go, Rust, Node) or remove that server from `ensure_installed` in `lua/logan/plugins/lsp/mason.lua`.
+
+4. **Permission denied under `~/.local/share/nvim`**
+   - The data dir was probably created as root.
+   - `sudo chown -R "$USER:$USER" ~/.local/share/nvim ~/.cache/nvim ~/.local/state/nvim`
+
+5. **Check versions:**
+
    ```bash
    nvim --version
-   ```
-   Ensure it's 0.10 or higher.
-
-2. **Verify Node.js installation:**
-   ```bash
+   tree-sitter --version
    node --version
-   npm --version
+   rg --version
+   gcc --version
+   make --version
    ```
 
-3. **Check font installation:**
-   ```bash
-   fc-list | grep -i "0xproto"
-   ```
+6. **Reinstall plugins:**
 
-4. **Clear plugin cache:**
    ```bash
    rm -rf ~/.local/share/nvim/lazy
+   nvim
    ```
-   Then restart Neovim to reinstall plugins.
 
 ## Getting Help
 
-- Check the [Neovim documentation](https://neovim.io/doc/)
-- Visit the [Lazy.nvim documentation](https://github.com/folke/lazy.nvim)
-- Review individual plugin documentation for specific features
+- [Neovim documentation](https://neovim.io/doc/)
+- [Lazy.nvim](https://github.com/folke/lazy.nvim)
+- [nvim-treesitter (main)](https://github.com/nvim-treesitter/nvim-treesitter)
+- Individual plugin docs for everything else
