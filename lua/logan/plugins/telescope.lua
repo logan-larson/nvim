@@ -1,6 +1,8 @@
 return {
     'nvim-telescope/telescope.nvim',
-    branch = '0.1.x',
+    -- 0.1.x never passes LSP position_encoding; Neovim 0.13 requires it
+    -- for gd/gR/gi/gt (definitions, references, implementations, type defs).
+    branch = 'master',
     dependencies = {
         'nvim-lua/plenary.nvim',
         { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
