@@ -141,7 +141,7 @@ Skip Go or Rust until you need those languages. Mason will fail on `gopls` if `g
 
 Do not run Neovim as root. Plugin and parser directories under `~/.local/share/nvim` must be owned by your user.
 
-## Windows and Neovide
+## Windows
 
 Neovim reads this config from `%LOCALAPPDATA%\nvim`, and plugins and parsers live in `%LOCALAPPDATA%\nvim-data` instead of `~/.local/share/nvim`.
 
@@ -152,11 +152,11 @@ git clone <your-repo-url> $env:LOCALAPPDATA\nvim
 Install the tools with Scoop (Neovim nightly is not published to winget):
 
 ```powershell
-scoop bucket add main; scoop bucket add extras; scoop bucket add versions; scoop bucket add nerd-fonts
-scoop install git ripgrep nodejs-lts 7zip cmake tree-sitter neovim-nightly neovide-nightly 0xProto-NF
+scoop bucket add main; scoop bucket add versions; scoop bucket add nerd-fonts
+scoop install git ripgrep nodejs-lts 7zip cmake tree-sitter neovim-nightly 0xProto-NF
 ```
 
-Pair Neovim nightly with Neovide nightly. Neovim nightlies from `v0.13.0-dev-988` onward changed the API metadata that Neovide reads at startup, and stable Neovide (0.16.2 and earlier) exits with `Failed to parse Neovim api information: Invalid parameter`. The fix landed in Neovide nightly in July 2026 ([neovide#3528](https://github.com/neovide/neovide/issues/3528)). Stable Neovide works with stable Neovim 0.12.
+Set your terminal font to `0xProto Nerd Font` (Windows Terminal: Settings, Profiles, Defaults, Appearance, Font face).
 
 Install the Visual Studio Build Tools with the C++ workload. CMake and the tree-sitter CLI both locate MSVC on their own, so you do not need a Developer prompt:
 
@@ -170,7 +170,7 @@ If Visual Studio is already installed (Unity Hub installs it, for example) you m
 & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 ```
 
-Then start Neovide, let lazy.nvim install plugins, restart, and run `:checkhealth nvim-treesitter` and `:checkhealth mason`.
+Then start `nvim`, let lazy.nvim install plugins, restart, and run `:checkhealth nvim-treesitter` and `:checkhealth mason`. Mason warnings about `unzip`, `wget`, `gzip` and unused language toolchains are expected; curl, tar, PowerShell and 7-Zip cover them.
 
 Windows notes:
 
@@ -179,13 +179,7 @@ Windows notes:
 - Mason needs PowerShell, git, tar and 7-Zip. Windows 10 and later ship `tar.exe` and `curl.exe` in System32, which is why `lua/logan/lazy.lua` must join `PATH` with `;` on Windows.
 - WakaTime downloads `wakatime-cli.exe` by itself and keeps its key in `%USERPROFILE%\.wakatime.cfg`.
 
-Neovide notes (`vim.g.neovide` is true only inside Neovide):
-
-- The GUI font is set to `0xProto Nerd Font:h14` in `lua/logan/core/options.lua`; the `:h14` suffix is the point size. Ctrl+= and Ctrl+- zoom the whole UI at runtime and Ctrl+0 resets.
-- smear-cursor is disabled because Neovide animates its own cursor.
-- nightfly transparency is turned off because there is no terminal to show through. Use `vim.g.neovide_opacity` if you want a translucent window.
-- Neovide delivers Ctrl+/ as `<C-/>` while terminals send `<C-_>`; the comment toggle is bound to both.
-- Clipboard: Ctrl+Shift+V and Shift+Insert paste from the system clipboard in normal, visual, insert and command-line mode; Ctrl+Shift+C copies a visual selection. Without mappings, `Ctrl+R` then `+` pastes in insert mode, on the command line and in prompts such as `:WakaTimeApiKey`.
+Neovide is not part of this setup. If you try it, stable Neovide (0.16.2) cannot start against Neovim nightly `v0.13.0-dev-988` or later; only Neovide nightly can ([neovide#3528](https://github.com/neovide/neovide/issues/3528)).
 
 ## Configuration Structure
 
