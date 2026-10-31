@@ -8,8 +8,10 @@ return {
       "L3MON4D3/LuaSnip",
       -- follow latest release.
       version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
-      -- install jsregexp (optional!).
-      build = "make install_jsregexp",
+      -- install jsregexp (optional!). Needs make + a C compiler, so skip it
+      -- when make is missing (typical on Windows). Only regex transforms
+      -- inside snippets are lost.
+      build = vim.fn.executable("make") == 1 and "make install_jsregexp" or nil,
     },
     "saadparwaiz1/cmp_luasnip", -- for autocompletion
     "rafamadriz/friendly-snippets", -- useful snippets

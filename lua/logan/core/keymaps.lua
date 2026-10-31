@@ -3,16 +3,22 @@ vim.g.mapleader = " "
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
--- Comment.nvim custom keybinds
-map("n", "<C-_>", function()
+-- Comment.nvim custom keybinds. Terminals deliver Ctrl+/ as <C-_>; GUIs such
+-- as Neovide deliver it as <C-/>, so bind both.
+local function toggle_comment_line()
     require("Comment.api").toggle.linewise.current()
-end, opts)
+end
 
-map("v", "<C-_>", function()
+local function toggle_comment_selection()
     local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
     vim.api.nvim_feedkeys(esc, "x", false)
     require("Comment.api").toggle.linewise(vim.fn.visualmode())
-end, opts)
+end
+
+for _, key in ipairs({ "<C-_>", "<C-/>" }) do
+    map("n", key, toggle_comment_line, opts)
+    map("v", key, toggle_comment_selection, opts)
+end
 
 map("n", "<leader>e", "<cmd>Ex<cr>", opts)
 

@@ -141,6 +141,43 @@ Skip Go or Rust until you need those languages. Mason will fail on `gopls` if `g
 
 Do not run Neovim as root. Plugin and parser directories under `~/.local/share/nvim` must be owned by your user.
 
+## Windows and Neovide
+
+Neovim reads this config from `%LOCALAPPDATA%\nvim`, and plugins and parsers live in `%LOCALAPPDATA%\nvim-data` instead of `~/.local/share/nvim`.
+
+```powershell
+git clone <your-repo-url> $env:LOCALAPPDATA\nvim
+```
+
+Install the tools with Scoop (Neovim nightly is not published to winget):
+
+```powershell
+scoop bucket add main; scoop bucket add extras; scoop bucket add versions; scoop bucket add nerd-fonts
+scoop install git ripgrep nodejs-lts 7zip cmake tree-sitter neovim-nightly neovide 0xProto-NF
+```
+
+Install the Visual Studio Build Tools with the C++ workload. CMake and the tree-sitter CLI both locate MSVC on their own, so you do not need a Developer prompt:
+
+```powershell
+winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+Then start Neovide, let lazy.nvim install plugins, restart, and run `:checkhealth nvim-treesitter` and `:checkhealth mason`.
+
+Windows notes:
+
+- GNU `make` is not part of MSVC. On Windows telescope-fzf-native builds with CMake instead, and LuaSnip skips the optional `jsregexp` build when `make` is missing. If you would rather use `make`, run `scoop install make gcc` and both original build steps work.
+- The fzf library is `build\libfzf.dll`. Rebuild it with `:Lazy build telescope-fzf-native.nvim`.
+- Mason needs PowerShell, git, tar and 7-Zip. Windows 10 and later ship `tar.exe` and `curl.exe` in System32, which is why `lua/logan/lazy.lua` must join `PATH` with `;` on Windows.
+- WakaTime downloads `wakatime-cli.exe` by itself and keeps its key in `%USERPROFILE%\.wakatime.cfg`.
+
+Neovide notes (`vim.g.neovide` is true only inside Neovide):
+
+- The GUI font is set to `0xProto Nerd Font` in `lua/logan/core/options.lua`; change the `:h12` suffix to resize.
+- smear-cursor is disabled because Neovide animates its own cursor.
+- nightfly transparency is turned off because there is no terminal to show through. Use `vim.g.neovide_opacity` if you want a translucent window.
+- Neovide delivers Ctrl+/ as `<C-/>` while terminals send `<C-_>`; the comment toggle is bound to both.
+
 ## Configuration Structure
 
 - `init.lua` - Main entry point
@@ -167,9 +204,9 @@ Do not run Neovim as root. Plugin and parser directories under `~/.local/share/n
    - Install `tree-sitter` 0.26.1+ on `PATH`, then `:TSInstall vimdoc vim query lua`.
    - `lua/logan/lazy.lua` pcall-wraps lazy's helptags so a missing parser warns instead of aborting startup.
 
-2. **Telescope: `'fzf' extension doesn't exist` / missing `libfzf.so`**
-   - You need both `gcc` and `make`.
-   - Rebuild with `make` in `~/.local/share/nvim/lazy/telescope-fzf-native.nvim`.
+2. **Telescope: `'fzf' extension doesn't exist` / missing `libfzf.so` (`libfzf.dll` on Windows)**
+   - You need both `gcc` and `make` (on Windows: `cmake` and the Visual Studio Build Tools).
+   - Rebuild with `make` in `~/.local/share/nvim/lazy/telescope-fzf-native.nvim`, or `:Lazy build telescope-fzf-native.nvim` from inside Neovim.
    - Telescope config pcall-loads the extension so a failed compile does not crash Neovim.
 
 3. **Mason failed on `gopls` / `rust_analyzer` / `ts_ls`**

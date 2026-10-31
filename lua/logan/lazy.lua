@@ -1,5 +1,8 @@
--- User-local tools (tree-sitter-cli, etc.)
-vim.env.PATH = vim.fn.expand("~/.local/bin") .. ":" .. (vim.env.PATH or "")
+-- User-local tools (tree-sitter-cli, etc.). Windows separates PATH entries
+-- with ";" -- using ":" there glues ~/.local/bin onto the first real entry
+-- (usually System32, home of tar.exe and curl.exe) and breaks it.
+local path_sep = vim.fn.has("win32") == 1 and ";" or ":"
+vim.env.PATH = vim.fs.normalize("~/.local/bin") .. path_sep .. (vim.env.PATH or "")
 
 -- Neovim 0.13 looks here for compiled treesitter parsers (vimdoc, lua, ...)
 vim.opt.rtp:prepend(vim.fn.stdpath("data") .. "/site")

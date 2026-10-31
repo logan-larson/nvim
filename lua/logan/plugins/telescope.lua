@@ -5,7 +5,14 @@ return {
     branch = 'master',
     dependencies = {
         'nvim-lua/plenary.nvim',
-        { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+        {
+            "nvim-telescope/telescope-fzf-native.nvim",
+            -- GNU make is not part of MSVC, so build with CMake on Windows
+            -- (needs cmake + Visual Studio Build Tools). Output: build/libfzf.dll
+            build = vim.fn.has("win32") == 1
+                and "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install"
+                or "make",
+        },
         "nvim-tree/nvim-web-devicons",
     },
     config = function()
@@ -28,7 +35,7 @@ return {
             }
         })
 
-        -- Built by telescope-fzf-native's `make` step; skip if the .so is missing
+        -- Built by telescope-fzf-native's build step; skip if the .so/.dll is missing
         -- so a failed compile cannot abort Neovim startup.
         local ok, err = pcall(telescope.load_extension, "fzf")
         if not ok then
