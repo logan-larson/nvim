@@ -181,10 +181,11 @@ Windows notes:
 
 Neovide notes (`vim.g.neovide` is true only inside Neovide):
 
-- The GUI font is set to `0xProto Nerd Font` in `lua/logan/core/options.lua`; change the `:h12` suffix to resize.
+- The GUI font is set to `0xProto Nerd Font:h14` in `lua/logan/core/options.lua`; the `:h14` suffix is the point size. Ctrl+= and Ctrl+- zoom the whole UI at runtime and Ctrl+0 resets.
 - smear-cursor is disabled because Neovide animates its own cursor.
 - nightfly transparency is turned off because there is no terminal to show through. Use `vim.g.neovide_opacity` if you want a translucent window.
 - Neovide delivers Ctrl+/ as `<C-/>` while terminals send `<C-_>`; the comment toggle is bound to both.
+- Clipboard: Ctrl+Shift+V and Shift+Insert paste from the system clipboard in normal, visual, insert and command-line mode; Ctrl+Shift+C copies a visual selection. Without mappings, `Ctrl+R` then `+` pastes in insert mode, on the command line and in prompts such as `:WakaTimeApiKey`.
 
 ## Configuration Structure
 

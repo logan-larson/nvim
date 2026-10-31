@@ -44,3 +44,26 @@ map("v", "L", "$", opts)
 -- NERDTree keymaps
 map("n", "<C-n>", "<cmd>NERDTreeToggle<cr>", opts)     -- Toggle NERDTree
 -- map("n", "<leader>f", "<cmd>NERDTreeFind<cr>", opts)       -- Find current file in NERDTree
+
+-- System clipboard shortcuts for GUI Neovim (Neovide). Terminals handle
+-- Ctrl+Shift+V / Shift+Insert themselves and never forward them, so these
+-- are inert there. Without any mapping, <C-r>+ pastes in insert, command-line
+-- and prompt modes, and "+p pastes in normal mode.
+map("v", "<C-S-c>", '"+y', opts) -- copy selection
+for _, key in ipairs({ "<C-S-v>", "<S-Insert>" }) do
+    map({ "n", "v" }, key, '"+P', opts)
+    map("i", key, "<C-r><C-o>+", opts) -- insert literally, no auto-indent
+    map("c", key, "<C-r>+", { noremap = true })
+end
+
+-- Neovide zoom: Ctrl+= / Ctrl+- scale the whole UI, Ctrl+0 resets.
+-- Change the base size via guifont in core/options.lua.
+if vim.g.neovide then
+    vim.g.neovide_scale_factor = vim.g.neovide_scale_factor or 1.0
+    local function zoom(delta)
+        vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta
+    end
+    map("n", "<C-=>", function() zoom(1.1) end, opts)
+    map("n", "<C-->", function() zoom(1 / 1.1) end, opts)
+    map("n", "<C-0>", function() vim.g.neovide_scale_factor = 1.0 end, opts)
+end
