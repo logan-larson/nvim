@@ -153,13 +153,21 @@ Install the tools with Scoop (Neovim nightly is not published to winget):
 
 ```powershell
 scoop bucket add main; scoop bucket add extras; scoop bucket add versions; scoop bucket add nerd-fonts
-scoop install git ripgrep nodejs-lts 7zip cmake tree-sitter neovim-nightly neovide 0xProto-NF
+scoop install git ripgrep nodejs-lts 7zip cmake tree-sitter neovim-nightly neovide-nightly 0xProto-NF
 ```
+
+Pair Neovim nightly with Neovide nightly. Neovim nightlies from `v0.13.0-dev-988` onward changed the API metadata that Neovide reads at startup, and stable Neovide (0.16.2 and earlier) exits with `Failed to parse Neovim api information: Invalid parameter`. The fix landed in Neovide nightly in July 2026 ([neovide#3528](https://github.com/neovide/neovide/issues/3528)). Stable Neovide works with stable Neovim 0.12.
 
 Install the Visual Studio Build Tools with the C++ workload. CMake and the tree-sitter CLI both locate MSVC on their own, so you do not need a Developer prompt:
 
 ```powershell
 winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+If Visual Studio is already installed (Unity Hub installs it, for example) you may still lack the compiler: CMake then reports `Building for: Visual Studio ...` followed by `No CMAKE_C_COMPILER could be found`. Open Visual Studio Installer, choose Modify on that install, tick "Desktop development with C++", and apply. This check lists every install that has the MSVC toolset; empty output means none does:
+
+```powershell
+& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 ```
 
 Then start Neovide, let lazy.nvim install plugins, restart, and run `:checkhealth nvim-treesitter` and `:checkhealth mason`.
