@@ -6,6 +6,7 @@ return {
     },
     event = "VeryLazy",
     init = function()
+        vim.g["airline#extensions#disable_rtp_load"] = 1
         vim.g["airline#extensions#tabline#enabled"] = 1
         vim.g["airline#extensions#tabline#show_buffers"] = 1
         vim.g["airline#extensions#tabline#show_tabs"] = 0
